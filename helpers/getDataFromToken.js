@@ -1,11 +1,18 @@
 import jwt from "jsonwebtoken"
 
+//jwt helper
 const getDataFromToken = (req) => {
     try {
-        const token = req.cookies.token || ""
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY)
+        const token = req.cookies?.token || "";
 
-        return decodedToken.id
+        if (!token) {
+        throw new Error("No token found");
+        }
+
+        // Verify token
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+        return decodedToken.id;
 
     } catch (error) {
         console.error("Error getting token: ", error)

@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken"
 import crypto from "crypto"
 import User from "../models/user.js"
 import Mailer from "../utils/Mailer.js"
-import getDataFromToken from "../helpers/getDataFromToken.js"
+
 
 
 const router = express.Router()
@@ -63,8 +63,11 @@ router.post("/login", async(req, res) =>{
         //create token
         const token = jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {expiresIn: "1h"})
 
+        //enables secure cookie
         res.cookie("token", token, {
             httpOnly: true,
+            secure: true,
+            sameSite: "strict",
         })
 
         res.status(200).json({
@@ -80,18 +83,23 @@ router.post("/login", async(req, res) =>{
 })
 
 
-router.post("/verifymail/:token", async (req, res) => {
+router.post("/verifymail", async (req, res) => {
     try {
         //get token from user
-        const token = req.params.token
+        const { token } = req.body
 
         // server checks if the token user provided matches
         const user = await User.findOne({verifyToken: token,
             verifyTokenExpires: {$gt: Date.now()}
         })
+
+        if (!token) {
+            return res.status(400).json({ error: "Token is required" });
+        }
         if (!user) {
             return res.status(400).json({message: "invalid token"})
         }
+
         //set user verification to true and reset token so no one can use it
         user.isVerified = true
         user.verifyToken = true
@@ -99,7 +107,7 @@ router.post("/verifymail/:token", async (req, res) => {
 
         await user.save()
 
-        return res.json({
+        return res.status(200).json({
             message: "Email verified successfully", 
         })
 
@@ -109,29 +117,15 @@ router.post("/verifymail/:token", async (req, res) => {
     }
 })
 
-router.post("/profile", async (req, res) => {
-    try {
-        const userId = getDataFromToken(req)
-        const user = await User.findOne({_id: userId}).select("-password")
 
-        return res.json({
-            message: "user found",
-            data: user
-        });
-
-    } catch (err) {
-        console.error(err.message)
-        res.status(500).json({message: "server error"})
-    }
-})
 
 router.post("/forgotpassword", async (req, res) => {
     try {
         //server requests email, to check if user exists
         const { email }  = req.body
-        const newUser = await User.findOne({email}) 
+        const user = await User.findOne({email}) 
 
-        if (!email) {
+        if (!user) {
             return res.status(400).json({message: "user not found"})
         }
         // reset password link sent to email
@@ -145,11 +139,10 @@ router.post("/forgotpassword", async (req, res) => {
     }
 })
 
-router.post("/resetpassword/:token", async (req, res) => {
+router.post("/resetpassword", async (req, res) => {
     try {
         //get password and token from user
-        const token = req.params.token
-        const {password} = req.body
+        const {token, password} = req.body
 
         if (!password) 
             return res.status(400).json({
@@ -172,7 +165,8 @@ router.post("/resetpassword/:token", async (req, res) => {
         user.resetPasswordExpires = undefined
         await user.save()
 
-        res.json({message: "Password reset successfully"})
+        return res.status(200).json({
+            message: "Password reset successfully"})
         
 
     } catch (err) {
@@ -183,12 +177,15 @@ router.post("/resetpassword/:token", async (req, res) => {
 
 router.get("/logout", async (req, res) => {
     try {
-        res.json({message: "logout successfully"})
-
         res.cookie("token", "", {
             httpOnly: true,
+            secure: true,
+            sameSite: "strict",
             expires: new Date(0)
         })
+        return res.status(200).json({
+        message: "Logout Successful"
+        });
 
     } catch (err) {
         console.error(err.message);
