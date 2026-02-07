@@ -17,6 +17,10 @@ app.use('/api/auth/me', protectRoutes, (req, res)=>{
 })
 app.use("/api/auth", authRoutes);
 
+app.get("/", (req, res) => {
+    res.send("server running")
+})
+
 
 const startServer = async() => {
     try {
