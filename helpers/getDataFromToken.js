@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken"
 //jwt helper
 const getDataFromToken = (req) => {
     try {
-        const token = req.cookies?.token || "";
+        c
 
         if (!token) {
         throw new Error("No token found");

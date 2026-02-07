@@ -1,21 +1,13 @@
-
+// Auth middleware for protected routes
 const authMiddleware = (publicPaths = []) => {
   return (req, res, next) => {
     try {
       const path = req.path;
       const token = req.cookies?.token || "";
-
       const isPublicPath = publicPaths.includes(path);
 
-      // If user has token and tries to access a public page (login/signup/verifymail)
-      if (token && isPublicPath) {
-        return res.redirect("/profile");
-      }
-
-      // If user does not have token and tries to access a protected page
-      if (!token && !isPublicPath) {
-        return res.redirect("/login");
-      }
+      if (token && isPublicPath) return res.redirect("/profile");
+      if (!token && !isPublicPath) return res.redirect("/login");
 
       next();
     } catch (error) {
@@ -25,4 +17,4 @@ const authMiddleware = (publicPaths = []) => {
   };
 };
 
-export default authMiddleware;
+export default authMiddleware
