@@ -5,7 +5,6 @@ import crypto from "crypto"
 import User from "../models/user.js"
 import Mailer from "../utils/Mailer.js"
 import getDataFromToken from "../helpers/getDataFromToken.js"
-import { error } from "console"
 
 
 const router = express.Router()
