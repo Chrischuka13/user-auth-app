@@ -5,9 +5,14 @@ import crypto from "crypto"
 import User from "../models/user.js"
 import Mailer from "../utils/Mailer.js"
 
-
-
 const router = express.Router()
+
+const signToken = (user) =>{
+    return jwt.sign({id: user._id}, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+    })
+};
+
 
 router.post('/signup', async (req, res) => {
     try {
@@ -24,6 +29,8 @@ router.post('/signup', async (req, res) => {
         // create user
         const newUser = new User({name, email, password: hashPassword})
         await newUser.save()
+
+        const token = signToken(user)
 
         await Mailer({email: newUser.email, emailType: "VERIFY", userId: newUser._id})
 
@@ -54,14 +61,7 @@ router.post("/login", async(req, res) =>{
             return res.status(400).json({message: "Email or password is wrong"})
         }
 
-        //create token data
-        const tokenData = {
-            id: user._id,
-            name: user.name,
-            email: user.email
-        }
-        //create token
-        const token = jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {expiresIn: "1h"})
+        const token = signToken(user)
 
         //enables secure cookie
         res.cookie("token", token, {
