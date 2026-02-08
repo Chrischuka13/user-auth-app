@@ -30,6 +30,13 @@ const Mailer = async({email, emailType, userId}) => {
         }
         });
 
+        console.log({
+        EMAIL_USER: process.env.EMAIL_USER,
+        EMAIL_PASS_EXISTS: !!process.env.EMAIL_PASS,
+        DOMAIN: process.env.domain,
+        });
+
+
         const actionUrl = emailType === "VERIFY"? `${process.env.domain}/verifymail?token=${hashToken}` : `${process.env.domain}/resetpassword?token=${hashToken}`;
         
         const mailOptions = {
