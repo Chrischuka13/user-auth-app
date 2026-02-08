@@ -43,8 +43,8 @@ router.post("/login", async(req, res) =>{
     try {
         const {email, password} = req.body
         
-        const existing = await User.findOne({email})
-        if (!existing) {
+        const user = await User.findOne({email})
+        if (!user) {
             return res.status(400).json({message: "User does not exist"})
         }
 
@@ -56,9 +56,9 @@ router.post("/login", async(req, res) =>{
 
         //create token data
         const tokenData = {
-            id: existing._id,
-            name: existing.name,
-            email: existing.email
+            id: user._id,
+            name: user.name,
+            email: user.email
         }
         //create token
         const token = jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {expiresIn: "1h"})
@@ -72,7 +72,7 @@ router.post("/login", async(req, res) =>{
 
         res.status(200).json({
             message: "User login successfully",
-            user: {id: existing._id, email: existing.email}, token
+            user: {id: user._id, email: user.email}, token
         })
 
 
