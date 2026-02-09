@@ -3,12 +3,12 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import crypto from "crypto"
 import User from "../models/user.js"
-import Mailer from "../utils/Mailer.js"
+import sendMail from "../utils/Mailer.js"
 
 const router = express.Router()
 
-const signToken = (user) =>{
-    return jwt.sign({id: user._id}, process.env.JWT_SECRET, {
+const signToken = (id) =>{
+    return jwt.sign({id}, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || "7d",
     })
 };
@@ -26,13 +26,20 @@ router.post('/signup', async (req, res) => {
         // hash password
         const salt = await bcrypt.genSalt(10)
         const hashPassword = await bcrypt.hash(password, salt)
+
+        const verificationToken = crypto.randomBytes(20).toString('hex');
+        const verificationTokenExpire = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+
         // create user
-        const newUser = new User({name, email, password: hashPassword})
-        await newUser.save()
+        const newUser = await User.create({
+        name,
+        email,
+        password: hashPassword,
+        verifyToken: verificationToken,
+        verifyTokenExpires: verificationTokenExpire,
+        })
 
-        const token = signToken(user)
-
-        await Mailer({email: newUser.email, emailType: "VERIFY", userId: newUser._id})
+        await sendMail({email: newUser.email, emailType: "VERIFY", userId: newUser._id})
 
         res.status(201).json({
             message: "user created successfully",
@@ -54,14 +61,17 @@ router.post("/login", async(req, res) =>{
         if (!user) {
             return res.status(400).json({message: "User does not exist"})
         }
+        if (!user.isVerified) {
+            return res.status(401).json({message: 'Please verify your email first'});
+        }
 
         //check if password matches with email
-        const validPassword = await bcrypt.compare(password, existing.password)
+        const validPassword = await bcrypt.compare(password, user.password)
         if (!validPassword) {
             return res.status(400).json({message: "Email or password is wrong"})
         }
 
-        const token = signToken(user)
+        const token = signToken(user._id)
 
         //enables secure cookie
         res.cookie("token", token, {
@@ -83,10 +93,10 @@ router.post("/login", async(req, res) =>{
 })
 
 
-router.post("/verifymail", async (req, res) => {
+router.get("/verifymail/:token", async (req, res) => {
     try {
         //get token from user
-        const { token } = req.body
+        const { token } = req.params
 
         // server checks if the token user provided matches
         const user = await User.findOne({verifyToken: token,
@@ -97,13 +107,13 @@ router.post("/verifymail", async (req, res) => {
             return res.status(400).json({ error: "Token is required" });
         }
         if (!user) {
-            return res.status(400).json({message: "invalid token"})
+            return res.status(400).json({message: "invalid or expired token"})
         }
 
         //set user verification to true and reset token so no one can use it
         user.isVerified = true
-        user.verifyToken = true
-        user.verifyTokenExpires = true
+        user.verifyToken = undefined
+        user.verifyTokenExpires = undefined
 
         await user.save()
 
@@ -128,8 +138,13 @@ router.post("/forgotpassword", async (req, res) => {
         if (!user) {
             return res.status(400).json({message: "user not found"})
         }
+        //generate reset token
+        const resetToken = crypto.randomBytes(20).toString('hex');
+        const resetTokenExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+        user.resetPasswordToken = resetToken
+        user.resetPasswordExpires = resetTokenExpire
         // reset password link sent to email
-        await Mailer({email: newUser.email, emailType: "RESET", userId: newUser._id})
+        await sendMail({email: newUser.email, emailType: "RESET", userId: newUser._id})
 
         res.json({message: "reset link sent successfully"})
 
@@ -139,10 +154,11 @@ router.post("/forgotpassword", async (req, res) => {
     }
 })
 
-router.post("/resetpassword", async (req, res) => {
+router.post("/resetpassword/:token", async (req, res) => {
     try {
         //get password and token from user
-        const {token, password} = req.body
+        const { token } = req.params
+        const { password } = req.body
 
         if (!password) 
             return res.status(400).json({

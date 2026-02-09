@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer'
 import User from "../models/user.js"
 import bcrypt from "bcrypt"
 
-const Mailer = async({email, emailType, userId}) => {
+const sendMail = async({email, emailType, userId}) => {
     try {
         // create a hash token
         const hashToken = await bcrypt.hash(userId.toString(), 10)
@@ -54,4 +54,4 @@ const Mailer = async({email, emailType, userId}) => {
 }
 
 
-export default Mailer;
+export default sendMail;

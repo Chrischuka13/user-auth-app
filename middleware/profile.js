@@ -4,14 +4,18 @@ import User from "../models/user.js"
 
 const router = express.Router();
 
-router.post("/profile", async (req, res) => {
+router.get("/profile", async (req, res) => {
     try {
         const userId = getDataFromToken(req)
-        const user = await User.findOne({_id: userId}).select("-password")
+        const user = await User.findById({_id: userId}).select("-password")
 
-        return res.json({
-            message: "user profile found successfully",
-            data: user
+        res.status(200).json({
+            user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            isVerified: user.isVerified
+        }
         });
 
     } catch (err) {
