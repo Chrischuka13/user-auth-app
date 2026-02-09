@@ -144,7 +144,7 @@ router.post("/forgotpassword", async (req, res) => {
         user.resetPasswordToken = resetToken
         user.resetPasswordExpires = resetTokenExpire
         // reset password link sent to email
-        await sendMail({email: newUser.email, emailType: "RESET", userId: newUser._id})
+        await sendMail({email: user.email, emailType: "RESET", userId: user._id})
 
         res.json({message: "reset link sent successfully"})
 
