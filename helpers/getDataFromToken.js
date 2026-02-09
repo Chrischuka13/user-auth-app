@@ -2,9 +2,8 @@ import jwt from "jsonwebtoken"
 
 //jwt helper
 const getDataFromToken = (req) => {
-    try {
-        c
-
+    try 
+        {
         if (!token) {
         throw new Error("No token found");
         }
