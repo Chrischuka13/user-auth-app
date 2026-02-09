@@ -8,7 +8,7 @@ import sendMail from "../utils/Mailer.js"
 const router = express.Router()
 
 const signToken = (id) =>{
-    return jwt.sign({id}, process.env.JWT_SECRET, {
+    return jwt.sign({id}, process.env.JWT_SECRET_KEY, {
         expiresIn: process.env.JWT_EXPIRES_IN || "7d",
     })
 };
