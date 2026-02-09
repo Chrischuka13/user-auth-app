@@ -61,9 +61,9 @@ router.post("/login", async(req, res) =>{
         if (!user) {
             return res.status(400).json({message: "User does not exist"})
         }
-        if (!user.isVerified) {
-            return res.status(401).json({message: 'Please verify your email first'});
-        }
+        // if (!user.isVerified) {
+        //     return res.status(401).json({message: 'Please verify your email first'});
+        // }
 
         //check if password matches with email
         const validPassword = await bcrypt.compare(password, user.password)
