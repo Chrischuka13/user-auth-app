@@ -71,7 +71,13 @@ router.post("/login", async(req, res) =>{
             return res.status(400).json({message: "Email or password is wrong"})
         }
 
-        const token = signToken(user._id)
+        const tokenData = {
+            id: user._id,
+            email: user.email,
+            password: user.password
+        }
+
+        const token = signToken(tokenData)
 
         //enables secure cookie
         res.cookie("token", token, {
@@ -182,7 +188,7 @@ router.post("/resetpassword/:token", async (req, res) => {
         await user.save()
 
         return res.status(200).json({
-            message: "Password reset successfully"})
+        message: "Password reset successfully"}, hashedToken)
         
 
     } catch (err) {
