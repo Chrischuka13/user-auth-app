@@ -11,6 +11,10 @@ const router = express.Router()
 router.post('/signup', async (req, res) => {
     try {
         const {name, email, password} = req.body
+
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
         
         // check for existing user
         const existing = await User.findOne({ email })
@@ -33,7 +37,17 @@ router.post('/signup', async (req, res) => {
         verifyTokenExpires: verificationTokenExpire,
         })
 
-        await sendMail({email: newUser.email, emailType: "VERIFY", userId: newUser._id})
+        try {
+            await sendMail({email: newUser.email, emailType: "VERIFY", userId: newUser._id})
+            console.log("Verification email sent");
+        } catch (mailError) {
+            console.error("Email sending failed:", mailError);
+            await User.deleteOne({ _id: newUser._id });
+
+            return res.status(500).json({
+                message: "Email sending failed. Please try again."
+            });
+        }
 
         res.status(201).json({
             message: "user created successfully",
