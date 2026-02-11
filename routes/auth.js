@@ -65,11 +65,8 @@ router.post("/login", async(req, res) =>{
             return res.status(400).json({message: "Email or password is wrong"})
         }
 
-        const tokenData = {
-            id: user._id,
-        }
 
-        const token = jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {expiresIn: "1h"})
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: "1h"})
 
         //enables secure cookie
         res.cookie("token", token, {
