@@ -32,7 +32,7 @@ const sendMail = async({email, emailType, userId}) => {
 
         await transport.verify()
 
-        const actionUrl = emailType === "VERIFY"? `${process.env.domain}/verifymail?token=${hashToken}` : `${process.env.domain}/resetpassword?token=${hashToken}`;
+        const actionUrl = emailType === "VERIFY"? `${process.env.domain}/verifymail/${hashToken}` : `${process.env.domain}/resetpassword/${hashToken}`;
         
         const mailOptions = {
             from: `"Chuka's Auth-Project" ${process.env.EMAIL_USER}`,
