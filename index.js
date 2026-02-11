@@ -18,8 +18,6 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// const publicPaths = ["/login", "/signup", "/verifymail"];
-// app.use(protectRoutes(publicPaths));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", profileRoute, protect, (req, res)=>{

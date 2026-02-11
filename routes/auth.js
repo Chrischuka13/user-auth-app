@@ -7,12 +7,6 @@ import sendMail from "../utils/Mailer.js"
 
 const router = express.Router()
 
-const signToken = (id) =>{
-    return jwt.sign({id}, process.env.JWT_SECRET_KEY, {
-        expiresIn: process.env.JWT_EXPIRES_IN || "7d",
-    })
-};
-
 
 router.post('/signup', async (req, res) => {
     try {
@@ -77,7 +71,7 @@ router.post("/login", async(req, res) =>{
             password: user.password
         }
 
-        const token = signToken(tokenData)
+        const token = jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {expiresIn: "1h"})
 
         //enables secure cookie
         res.cookie("token", token, {

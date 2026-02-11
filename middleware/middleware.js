@@ -15,7 +15,7 @@ const protect = async (req, res, next) => {
             process.env.JWT_SECRET_KEY
         )
 
-        req.user = decoded   // attach user to request
+        req.user = decoded.id  // attach user to request
 
         next()
   } catch (err) {
