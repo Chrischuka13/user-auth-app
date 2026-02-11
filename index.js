@@ -4,7 +4,6 @@ import mongoose from "mongoose"
 import express from "express"
 import authRoutes from "./routes/auth.js"
 import cookieParser from "cookie-parser";
-import protect from "./middleware/middleware.js"
 import profileRoute from './middleware/profile.js'
 const app = express()
 const PORT = process.env.PORT || 8000 
@@ -20,9 +19,7 @@ app.use(cookieParser());
 
 
 app.use("/api/auth", authRoutes);
-app.use("/api/auth", profileRoute, protect, (req, res)=>{
-    res.json({user: req.user})
-})
+app.use("/api/auth", profileRoute)
 
 app.get("/", (req, res) => {
     res.send("server running")

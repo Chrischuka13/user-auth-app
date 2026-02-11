@@ -1,9 +1,10 @@
 import express from "express"
 import User from "../models/user.js"
+import protect from "./middleware.js";
 
 const router = express.Router();
 
-router.get("/profile", async (req, res) => {
+router.get("/profile", protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("-password")
 
