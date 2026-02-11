@@ -37,9 +37,22 @@ router.post('/signup', async (req, res) => {
         verifyTokenExpires: verificationTokenExpire,
         })
 
+
+
         try {
-            await sendMail({email: newUser.email, emailType: "VERIFY", userId: newUser._id})
-            console.log("Verification email sent");
+            const verifyUrl = `${process.env.CLIENT_URL}/verifymail/${verificationToken}`;
+        await sendMail({
+            to: newUser.email,
+            subject: "Verify your email address",
+            htmlContent: `
+                <h2>Welcome to Your App!</h2>
+                <p>Click the link below to verify your email:</p>
+                <a href="${verifyUrl}">${verifyUrl}</a>`
+        });
+            res.status(201).json({
+            message: "Signup successful — verification email sent",
+        });
+        
         } catch (mailError) {
             console.error("Email sending failed:", mailError);
             await User.deleteOne({ _id: newUser._id });
@@ -155,7 +168,7 @@ router.post("/forgotpassword", async (req, res) => {
         // reset password link sent to email
         await sendMail({email: user.email, emailType: "RESET", userId: user._id})
 
-        res.json({message: "reset link sent successfully"})
+        res.json({message: "reset link sent successfully"}, resetToken)
 
     } catch (err) {
         console.error(err.message)
