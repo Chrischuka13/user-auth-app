@@ -1,9 +1,9 @@
-import Brevo from "@getbravo/bravo";
+import Brevo from "@getbrevo/brevo";
 
 const client = new Brevo.TransactionalEmailsApi();
 client.authentications.apiKey.apiKey = process.env.BREVO_API_KEY;
 
-export const sendMail = async ({ to, subject, htmlContent }) => {
+export const sendMailer = async ({ to, subject, htmlContent }) => {
   const email = new Brevo.SendSmtpEmail();
 
   email.sender = {

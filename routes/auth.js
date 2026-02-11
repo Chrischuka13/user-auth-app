@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken"
 import crypto from "crypto"
 import User from "../models/user.js"
 import sendMail from "../utils/Mailer.js"
+import { sendMailer } from "../utils/sendMail.js"
 
 const router = express.Router()
 
@@ -36,32 +37,21 @@ router.post('/signup', async (req, res) => {
         verifyToken: verificationToken,
         verifyTokenExpires: verificationTokenExpire,
         })
-
-
-
-        try {
-            const verifyUrl = `${process.env.CLIENT_URL}/verifymail/${verificationToken}`;
-        await sendMail({
+    
+        const verifyUrl = `${process.env.CLIENT_URL}/verifymail/${verificationToken}`;
+        await sendMailer({
             to: newUser.email,
             subject: "Verify your email address",
             htmlContent: `
                 <h2>Welcome to Your App!</h2>
                 <p>Click the link below to verify your email:</p>
-                <a href="${verifyUrl}">${verifyUrl}</a>`
-        });
+                <a href="${verifyUrl}">${verifyUrl}</a>` });
+
             res.status(201).json({
             message: "Signup successful — verification email sent",
         });
+
         
-        } catch (mailError) {
-            console.error("Email sending failed:", mailError);
-            await User.deleteOne({ _id: newUser._id });
-
-            return res.status(500).json({
-                message: "Email sending failed. Please try again."
-            });
-        }
-
         res.status(201).json({
             message: "user created successfully",
             user: {id: newUser._id, name: newUser.name, email: newUser.email}
