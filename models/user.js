@@ -22,12 +22,12 @@ const userSchema = new Schema({
         default: false,
     },
 
-    // reset password
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
     // verify email
     verifyToken: String,
     verifyTokenExpires: Date,
+    // reset password
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
 
     createdAt: {
         type: Date,

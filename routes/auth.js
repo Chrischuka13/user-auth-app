@@ -30,31 +30,20 @@ router.post('/signup', async (req, res) => {
         const verificationTokenExpire = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
         // create user
-        const newUser = await User.create({
+        const user =  new User({
         name,
         email,
         password: hashPassword,
         verifyToken: verificationToken,
         verifyTokenExpires: verificationTokenExpire,
         })
+        await user.save()
     
-        const verifyUrl = `${process.env.CLIENT_URL}/verifymail/${verificationToken}`;
-        await sendMailer({
-            to: newUser.email,
-            subject: "Verify your email address",
-            htmlContent: `
-                <h2>Welcome to Your App!</h2>
-                <p>Click the link below to verify your email:</p>
-                <a href="${verifyUrl}">${verifyUrl}</a>` });
-
-            res.status(201).json({
-            message: "Signup successful — verification email sent",
-        });
-
+        await sendMail({email: user.email, emailType: "VERIFY", userId: user._id})
         
         res.status(201).json({
             message: "user created successfully",
-            user: {id: newUser._id, name: newUser.name, email: newUser.email}
+            user: {id: user._id, name: user.name, email: user.email}
         })
 
     } catch (err) {

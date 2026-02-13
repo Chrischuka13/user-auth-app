@@ -30,7 +30,7 @@ const sendMail = async({email, emailType, userId}) => {
         }
         });
 
-        await transport.verify()
+        // await transport.verify()
 
         const actionUrl = emailType === "VERIFY"? `${process.env.domain}/verifymail/${hashToken}` : `${process.env.domain}/resetpassword/${hashToken}`;
         
