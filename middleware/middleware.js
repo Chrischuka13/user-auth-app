@@ -1,41 +1,45 @@
-import jwt from "jsonwebtoken"
+const jwt = require("jsonwebtoken");
 
-const protect = async (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]; 
+const protect = (req, res, next) => {
+  const path = req.path;
 
-  const isAuthPage = req.path === "/login" || req.path === "/signup";
-  const isProfilePage = req.path === "/profile";
+  const publicPaths = ["/login", "/signup"];
+  const isPublicPath = publicPaths.includes(path);
 
+  // 🔹 Get token from Authorization header
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
+
+  // 🔹 If token exists, verify it
   if (token) {
     try {
       jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-      // If logged in and NOT accessing profile → block
-      if (isAuthPage) {
+      // If logged in & trying to access public page
+      if (isPublicPath) {
         return res.status(403).json({
-          message: "You are already logged in"
+          message: "You are already logged in."
         });
       }
 
       return next();
-
     } catch (err) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
-  }
-
-  if (!token) {
-    // Block access to profile
-    if (isProfilePage) {
       return res.status(401).json({
-        message: "You must be logged in to access profile."
+        message: "Invalid or expired token."
       });
     }
-
-    // Allow other pages
-    return next();
   }
 
+  // 🔹 If NO token & trying to access protected page
+  if (!token && !isPublicPath) {
+    return res.status(401).json({
+      message: "Please login to access this page."
+    });
+  }
+
+  next();
 };
 
 export default protect
