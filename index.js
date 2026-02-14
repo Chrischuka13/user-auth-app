@@ -5,7 +5,6 @@ import express from "express"
 import authRoutes from "./routes/auth.js"
 import cookieParser from "cookie-parser";
 import profileRoute from './middleware/profile.js'
-import protect from "./middleware/middleware.js"
 const app = express()
 const PORT = process.env.PORT || 8000 
 
@@ -21,7 +20,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 
-app.use("/api/auth", authRoutes, protect);
+app.use("/api/auth", authRoutes);
 app.use("/api/auth", profileRoute)
 
 app.get("/", (req, res) => {
