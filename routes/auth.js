@@ -94,7 +94,7 @@ router.post("/login", async(req, res) =>{
 })
 
 
-router.get("/verifymail/:token", async (req, res) => {
+router.post("/verifymail/:token", async (req, res) => {
     try {
         //get token from user
         const { token } = req.params
